@@ -39,18 +39,19 @@ main :: proc() {
         case "exit", "quit":
             return
         case "test":
-            test_calculate("10",           10)
-            test_calculate("1 + 2",        1 + 2)
-            test_calculate("2 * (2 + 10)", 2 * (2 + 10))
-            test_calculate("2 + -(2 / 2)", 2 + -(2 / 2))
-            test_calculate("10 * pi * 2",  10 * math.PI * 2)
+            test_calc("10",           10)
+            test_calc("1 + 2",        1 + 2)
+            test_calc("2 * (2 + 10)", 2 * (2 + 10))
+            test_calc("(2 + 2) * 10", (2 + 2) * 10)
+            test_calc("2 + -(2 / 2)", 2 + -(2 / 2))
+            test_calc("10 * pi * 2",  10 * math.PI * 2)
         case:
             print_calculate(input)
         }
     }
 }
 
-test_calculate :: proc(input: string, expected_res: f64) {
+test_calc :: proc(input: string, expected_res: f64) {
     fmt.printf(">>> {}\n", input)
     result, ok := calculate(input)
     if ok {
@@ -65,6 +66,14 @@ test_calculate :: proc(input: string, expected_res: f64) {
     }
 }
 
+print_input_prompt :: proc() {
+	fmt.print("calc> ")
+}
+
+print_error_prompr :: proc() {
+	fmt.print("error:")
+}
+
 print_calculate :: proc(input: string) {
     result, ok := calculate(input)
     if ok do fmt.printf("  = {:.6f}\n", result)
@@ -73,8 +82,7 @@ print_calculate :: proc(input: string) {
 
 calculate :: proc(input: string) -> (result: f64, ok: bool) {
     print_error_prefix :: proc(input: string, pos: ^int) {
-        fmt.print("err:")
-        for _ in 1 .. pos^ { fmt.print(" ") }
+        for _ in 1 .. pos^ do fmt.print(" ")
         fmt.print("└─> ")
     }
 
