@@ -172,6 +172,7 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool) {
 		}
 
 		// TODO: try parse operator
+		// op: u8 = 0
 		// cur_index, op, proc_ok = parse_op(input[cur_index:])
 		// if (proc_ok) {
 		// 	cur_opdata.op = op
