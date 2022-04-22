@@ -1,4 +1,4 @@
-package main
+package calc
 
 // BUG:
 // >>> (2 + 3) * 2

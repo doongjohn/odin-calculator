@@ -1,32 +1,9 @@
-package eval
+package calc
 
 import "core:math"
 import "core:strings"
 import "core:strconv"
 import "core:unicode/utf8"
-
-parse_space :: proc(str: string) -> (end: int, ok: bool) {
-	// parse white space
-	// return:
-	//     end => index where parsing is ended
-	//     ok  => is an input successfully parsed as white space
-
-	ok = true
-	length := len(str)
-
-	if (length == 0) {
-		ok = false; return
-	}
-
-	for end < length - 1 {
-		end += 1
-		if (str[end] != " ") {
-			end -= 1; return
-		}
-	}
-
-	ok = false; return
-}
 
 parse_const :: proc(str: string) -> (end: int, num: f64, ok: bool) {
 	// parse predefined constants
@@ -38,8 +15,8 @@ parse_const :: proc(str: string) -> (end: int, num: f64, ok: bool) {
 	ok = true
 	length := len(str)
 	is_prefixed := strings.index_byte("+-", str[0]) >= 0
-	sign := 1
-	if is_prefixed && str[0] == "-" do sign = -1
+	sign: f64 = 1
+	if is_prefixed && str[0] == '-' do sign = -1
 
 	if length == 0 || strings.index_byte(".0123456789*/^", str[0]) >= 0 {
 		ok = false; return
@@ -97,26 +74,24 @@ parse_number :: proc(str: string) -> (end: int, num: f64, ok: bool) {
 			}
 		}
 	}
-
-	unreachable("wut")
 	return
 }
 
-// FIXME: test this (i think this is broken)
 parse_paren :: proc(str: string) -> (end: int, ok: bool) {
 	// parse parentheses
 	// return:
 	//     i  => index where parsing is ended
-	//     ok => is parentheses match
+	//     ok => is parentheses has a matching pair
+	// TODO: include sign
 
 	length := len(str)
 	open_count: uint = 1
 
-	if str_len < 2 || str[0] != '(' {
+	if length < 2 || str[0] != '(' {
 		ok = false; return
 	}
 
-	for end < str_len - 1 {
+	for end < length - 1 {
 		end += 1
 		switch str[end] {
 		case '(':
@@ -134,6 +109,73 @@ parse_paren :: proc(str: string) -> (end: int, ok: bool) {
 	return
 }
 
-evaluate :: proc(input: string) {
-	// TODO: make eval function
+Op_Data :: struct {
+	num: f64,
+	op: u8,
+}
+
+// TODO: make eval function
+evaluate :: proc(input: string) -> (result: f64, ok: bool) {
+	// - try parse constant
+	// - try parse number
+	// - try parse paren
+	// - try parse operator
+	// - update oplist
+	//   - do calculation
+	//     - clear oplist
+
+	oplist := [3]Op_Data {
+		Op_Data{ num = 0, op = 0 }, // operator precedence 0
+		Op_Data{ num = 0, op = 0 }, // operator precedence 1
+		Op_Data{ num = 0, op = 0 }, // operator precedence 2
+	}
+	context.user_ptr = ^oplist
+
+	clear_oplist :: proc() {
+		context.user_ptr^ = {
+			Op_Data{ num = 0, op = 0 },
+			Op_Data{ num = 0, op = 0 },
+			Op_Data{ num = 0, op = 0 },
+		}
+	}
+
+	length = len(input)
+	cur_index = 0
+	cur_char: u8 = 0
+	cur_opdata = Op_Data{ num = 0, op = 0 }
+	proc_ok = false
+
+	for cur_index < length - 1 {
+		// try parse constant
+		cur_index, num, proc_ok = parse_const(input[cur_index:])
+		if (ok) {
+			cur_opdata.num = num
+			continue
+		}
+
+		// try parse number literal
+		cur_index, num, proc_ok = parse_number(input[cur_index:])
+		if (ok) {
+			cur_opdata.num = num
+			continue
+		}
+
+		// try parse parentheses
+		cur_index, proc_ok = parse_paren(input[cur_index:])
+		if (ok) {
+			// try evaluate expression
+			num, proc_ok = evaluate(input[cur_index:])
+			if (!proc_ok) {
+				// TODO: error
+			}
+			continue
+		}
+
+		// TODO: try parse operator
+		// cur_index, op, proc_ok = parse_op(input[cur_index:])
+		// if (proc_ok) {
+		// 	cur_opdata.op = op
+		// 	continue
+		// }
+	}
 }
