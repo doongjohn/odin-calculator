@@ -1,10 +1,5 @@
 package calc
 
-// BUG:
-// >>> (2 + 3) * 2
-// err:     └─> Expected operator. (")" is not a valid operator.)
-// err:└─> Invalid expression.
-
 // TODO:
 // - [x] multi-digit numbers
 // - [x] +- prefixed numbers
@@ -39,12 +34,30 @@ main :: proc() {
         case "exit", "quit":
             return
         case "test":
-            test_calc("10",           10)
-            test_calc("1 + 2",        1 + 2)
-            test_calc("2 * (2 + 10)", 2 * (2 + 10))
-            test_calc("(2 + 2) * 10", (2 + 2) * 10)
-            test_calc("2 + -(2 / 2)", 2 + -(2 / 2))
-            test_calc("10 * pi * 2",  10 * math.PI * 2)
+            test_calc(
+				"10",
+				10,
+			)
+            test_calc(
+				"-10++10--10",
+				-10 + 10 + 10,
+			)
+			test_calc(
+				"10 + pi * 2",
+				10 * math.PI * 2,
+			)
+            test_calc(
+				"2 * (2 + 10)",
+				2 * (2 + 10),
+			)
+            test_calc(
+				"1 + (2 + 2) * 10 ^ 2",
+				(2 + 2) * 10,
+			)
+            test_calc(
+				"2 + -(2 / 2)",
+				2 + -(2 / 2),
+			)
         case:
             print_calculate(input)
         }
