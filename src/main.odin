@@ -1,4 +1,4 @@
-package calc
+package main
 
 // TODO:
 // - [x] multi-digit numbers
@@ -21,6 +21,7 @@ import "core:fmt"
 import "core:strings"
 import "core:strconv"
 import "core:unicode/utf8"
+import "shared:eval"
 
 main :: proc() {
     for {
@@ -88,7 +89,8 @@ print_error_prompr :: proc() {
 }
 
 print_calculate :: proc(input: string) {
-    result, ok := calculate(input)
+    result, ok := eval.evaluate(input)
+    // result, ok := calculate(input)
     if ok do fmt.printf("  = {:.6f}\n", result)
     fmt.println()
 }
