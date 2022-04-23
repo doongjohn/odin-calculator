@@ -77,6 +77,51 @@ parse_number :: proc(str: string) -> (end: int, num: f64, ok: bool) {
 	return
 }
 
+parse_op :: proc(str: string) -> (end: int, op: proc(a, b: f64) -> f64, op_pcd: u8, ok: bool) {
+	// parse operator
+	// return:
+	//     i      => index where parsing is ended
+	// 	   op     => operation function
+	// 	   op_pcd => operation precedence
+	//     ok     => is parentheses has a matching pair
+
+	ok = true
+	length := len(str)
+
+	ops := [?]string{
+		"+",
+		"-",
+		"*",
+		"/",
+		"^",
+	}
+	op_pcds := [?]u8 {
+		0,
+		0,
+		1,
+		1,
+		2,
+	}
+	op_procs := [?]proc(a, b: f64) -> f64 {
+		proc(a, b: f64) -> f64 { return a + b },
+		proc(a, b: f64) -> f64 { return a - b },
+		proc(a, b: f64) -> f64 { return a * b },
+		proc(a, b: f64) -> f64 { return a / b },
+		proc(a, b: f64) -> f64 { return math.pow(a, b) },
+	}
+
+	for opstr, i in ops {
+		if opstr == str[:len(opstr)] {
+			end = len(opstr) + 1
+			op = op_procs[i]
+			op_pcd = op_pcds[i]
+			return
+		}
+	}
+
+	ok = false; return
+}
+
 parse_paren :: proc(str: string) -> (end: int, ok: bool) {
 	// parse parentheses
 	// return:
@@ -111,7 +156,8 @@ parse_paren :: proc(str: string) -> (end: int, ok: bool) {
 
 Op_Data :: struct {
 	num: f64,
-	op: u8,
+	op: proc(a, b: f64) -> f64,
+	op_pcd: u8,
 }
 
 // TODO: make eval function
@@ -124,59 +170,120 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool) {
 	//   - do calculation
 	//     - clear oplist
 
-	oplist := [3]Op_Data {
-		Op_Data{ num = 0, op = 0 }, // operator precedence 0
-		Op_Data{ num = 0, op = 0 }, // operator precedence 1
-		Op_Data{ num = 0, op = 0 }, // operator precedence 2
+	TokenType :: enum {
+		None,
+		Number,
+		Operator,
 	}
-	context.user_ptr = ^oplist
+
+	oplist := [?]Op_Data {
+		Op_Data{ num = 0, op = nil, op_pcd = 0 }, // operator precedence 0
+		Op_Data{ num = 0, op = nil, op_pcd = 0 }, // operator precedence 1
+		Op_Data{ num = 0, op = nil, op_pcd = 0 }, // operator precedence 2
+	}
+	context.user_ptr = &oplist
 
 	clear_oplist :: proc() {
-		context.user_ptr^ = {
-			Op_Data{ num = 0, op = 0 },
-			Op_Data{ num = 0, op = 0 },
-			Op_Data{ num = 0, op = 0 },
+		(^[3]Op_Data)(context.user_ptr)^ = {
+			Op_Data{ num = 0, op = nil, op_pcd = 0 },
+			Op_Data{ num = 0, op = nil, op_pcd = 0 },
+			Op_Data{ num = 0, op = nil, op_pcd = 0 },
 		}
 	}
 
-	length = len(input)
-	cur_index = 0
-	cur_char: u8 = 0
-	cur_opdata = Op_Data{ num = 0, op = 0 }
-	proc_ok = false
+	length := len(input)
+	cur_i: int = 0
+	cur_c: u8 = 0
+	num: f64 = 0
+	proc_ok := false
+	cur_opdata := Op_Data{ num = 0, op = nil }
+	prev_token: TokenType = .None
 
-	for cur_index < length - 1 {
+	for cur_i < length - 1 {
+		ok = false
+
+		cur_c = input[cur_i]
+
+		// ignore white space
+		if cur_c == ' ' do continue
+
 		// try parse constant
-		cur_index, num, proc_ok = parse_const(input[cur_index:])
-		if (ok) {
+		cur_i, num, proc_ok = parse_const(input[cur_i:])
+		if ok {
 			cur_opdata.num = num
+			prev_token = .Number
 			continue
 		}
 
 		// try parse number literal
-		cur_index, num, proc_ok = parse_number(input[cur_index:])
-		if (ok) {
+		cur_i, num, proc_ok = parse_number(input[cur_i:])
+		if ok {
 			cur_opdata.num = num
+			prev_token = .Number
 			continue
 		}
 
 		// try parse parentheses
-		cur_index, proc_ok = parse_paren(input[cur_index:])
-		if (ok) {
+		cur_i, proc_ok = parse_paren(input[cur_i:])
+		if ok {
 			// try evaluate expression
-			num, proc_ok = evaluate(input[cur_index:])
-			if (!proc_ok) {
-				// TODO: error
-			}
+			num, proc_ok = evaluate(input[cur_i:])
+			if !proc_ok do break
+			prev_token = .Number
 			continue
 		}
 
-		// TODO: try parse operator
-		// op: u8 = 0
-		// cur_index, op, proc_ok = parse_op(input[cur_index:])
-		// if (proc_ok) {
-		// 	cur_opdata.op = op
-		// 	continue
-		// }
+		// try parse operator
+		op: proc(a, b: f64) -> f64 = nil
+		op_pcd: u8 = 0
+		cur_i, op, op_pcd, proc_ok = parse_op(input[cur_i:])
+		if proc_ok {
+			cur_opdata.op = op
+			cur_opdata.op_pcd = op_pcd
+			prev_token = .Operator
+
+			// get previous operator precedence
+			prev_op_pcd: u8 = 0
+			for opdata in oplist {
+				if prev_op_pcd < opdata.op_pcd && opdata.op != nil {
+					prev_op_pcd = opdata.op_pcd
+				}
+			}
+			// check operator precedence
+			if oplist[prev_op_pcd].op != nil && prev_op_pcd <= op_pcd {
+				// do calculation
+				lhs := oplist[prev_op_pcd].num
+				result = oplist[prev_op_pcd].op(lhs, num)
+				// clear oplist
+				clear_oplist()
+				ok = true
+			}
+
+			// apply current op data
+			oplist[op_pcd] = cur_opdata
+			continue
+		}
+	} // end of for loop
+
+	// final operation
+	if prev_token == .Number {
+		prev_op_pcd: u8 = 0
+		for opdata in oplist {
+			if prev_op_pcd < opdata.op_pcd && opdata.op != nil {
+				prev_op_pcd = opdata.op_pcd
+			}
+		}
+		if oplist[prev_op_pcd].op != nil {
+			lhs := oplist[prev_op_pcd].num
+			result = oplist[prev_op_pcd].op(lhs, num)
+			ok = true
+		} else {
+			// unreachable?
+		}
+	} else {
+		// math expression must end with number token
+		ok = false; return
 	}
+
+	return
 }
