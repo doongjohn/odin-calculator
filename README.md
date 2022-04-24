@@ -1,2 +1,3 @@
 # odin-calculator
-simple cli calculator
+
+simple terminal calculator
