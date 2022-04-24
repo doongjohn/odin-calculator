@@ -11,7 +11,6 @@ import "core:unicode/utf8"
 parse_const :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 	// parse predefined constants
 	// return:
-	//     end => index where parsing is ended
 	//     num => value of the constant
 	//     ok  => is an input successfully parsed as constant
 
@@ -51,7 +50,6 @@ parse_number :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 	// parse string as f64 number
 	// NOTE: `+`, `-` prefix is part of the number
 	// return:
-	//     end => index where parsing is ended
 	//     num => parsed number
 	//     ok  => is an input successfully parsed as f64
 
@@ -91,9 +89,8 @@ parse_number :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pcd: u8, ok: bool = true) {
 	// parse operator
 	// return:
-	//     end    => index where parsing is ended
-	// 	   op     => operation function
-	// 	   op_pcd => operation precedence
+	//     op     => operation function
+	//     op_pcd => operation precedence
 	//     ok     => is parentheses has a matching pair
 
 	operators: #soa[5]struct {
@@ -155,8 +152,8 @@ parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pc
 parse_paren :: proc(index: ^int, str: string) -> (expr_end: int, ok: bool = true) {
 	// parse parentheses
 	// return:
-	//     i  => index where parsing is ended
-	//     ok => is parentheses has a matching pair
+	//     expr_end => index where the parsing is ended
+	//     ok       => is parentheses has a matching pair
 	// TODO: include sign
 
 	length := len(str)
