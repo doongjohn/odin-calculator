@@ -57,6 +57,12 @@ parse_number :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 
 	length := len(str)
 	is_prefixed := strings.index_byte("+-", str[0]) >= 0
+	if is_prefixed && length == 1 {
+		ok = false; return
+	}
+	if is_prefixed && length > 1 && strings.index_byte("+-", str[1]) >= 0 {
+		ok = false; return
+	}
 
 	end := 0
 	parse_ok := false
@@ -74,6 +80,8 @@ parse_number :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 			}
 		}
 	}
+
+	// parse success
 	index^ += end
 	return
 }

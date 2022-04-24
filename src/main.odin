@@ -19,9 +19,9 @@ package main
 
 import "core:io"
 import "core:os"
-import "core:math"
 import "core:fmt"
 import "core:strings"
+import "core:math"
 import "eval"
 
 print_input_prompt :: proc() {
@@ -55,10 +55,10 @@ stdin_readline :: proc() -> strings.Builder {
 main :: proc() {
     for {
 		print_input_prompt()
-        input_builder := stdin_readline()
-        defer strings.destroy_builder(&input_builder)
+		input_str_builder := stdin_readline()
+        defer strings.destroy_builder(&input_str_builder)
 
-        input := strings.trim_space(strings.to_string(input_builder))
+        input := strings.trim_space(strings.to_string(input_str_builder))
 		switch input {
 		case "exit", "quit":
 			return
@@ -117,6 +117,10 @@ test_all :: proc() {
 		{
 			"-12",
 			-12,
+		},
+		{
+			"+10-+12",
+			10-12,
 		},
 		{
 			"10+2",
