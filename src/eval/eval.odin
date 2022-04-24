@@ -118,7 +118,7 @@ parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_
 }
 
 evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
-	prev_token = TokenType.None
+	prev_token: TokenType = .None
 	oplist := [3]Op_Data {
 		Op_Data{}, // operator precedence 0
 		Op_Data{}, // operator precedence 1
