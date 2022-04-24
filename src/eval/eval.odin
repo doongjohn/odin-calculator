@@ -173,17 +173,18 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 	cur_c: u8 = 0
 	cur_opdata := Op_Data{}
 
-	// calculate all ops from the highest precedence
-	// -----------------
-	// 1 + 2 * 2 ^ 3 + 1
-	// -----------------
-	// 1+
-	// 2*
-	// 2^
-	// 3+
-	// 1
-	// -----------------
 	oplist_calculate :: proc(oplist: []Op_Data, prev_op_pcd: u8, cur_opdata: ^Op_Data) {
+		// calculate all operations from the highest precedence
+		// -----------------
+		// 1 + 2 * 2 ^ 3 + 1
+		// -----------------
+		// oplist[0]  : 1+
+		// oplist[1]  : 2*
+		// oplist[2]  : 2^
+		// cur_opdata : 3+
+		// -----------------
+		// last opdata `3 + 1` will be
+		// calculated at the end of the evaluate function
 		prev_op_pcd := prev_op_pcd
 		prev_opdata := Op_Data{}
 		i := prev_op_pcd
