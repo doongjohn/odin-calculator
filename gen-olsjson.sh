@@ -1,3 +1,5 @@
+#!/bin/sh
+
 HOME=$HOME
 DIR=`pwd`
 
