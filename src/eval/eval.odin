@@ -85,25 +85,53 @@ parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pc
 	// 	   op_pcd => operation precedence
 	//     ok     => is parentheses has a matching pair
 
-	length := len(str)
-	end := 0
-
-	ops := [?]string{ "+", "-", "*", "/", "^" }
-	op_pcds := [?]u8 { 0, 0, 1, 1, 2 }
-	op_procs := [?]proc(a, b: f64) -> f64 {
-		proc(a, b: f64) -> f64 { fmt.printf("{} + {}\n", a, b); return a + b },
-		proc(a, b: f64) -> f64 { fmt.printf("{} - {}\n", a, b); return a - b },
-		proc(a, b: f64) -> f64 { fmt.printf("{} * {}\n", a, b); return a * b },
-		proc(a, b: f64) -> f64 { fmt.printf("{} / {}\n", a, b); return a / b },
-		proc(a, b: f64) -> f64 { fmt.printf("{} ^ {}\n", a, b); return math.pow(a, b) },
+	operators: #soa[5]struct {
+		str: string,
+		pcd: u8,
+		func: proc(a, b: f64) -> f64,
+	}
+	operators[0] = {
+		"+", 0,
+		proc(a, b: f64) -> f64 {
+			fmt.printf("{} + {}\n", a, b);
+			return a + b
+		},
+	}
+	operators[1] = {
+		"-", 0,
+		proc(a, b: f64) -> f64 {
+			fmt.printf("{} - {}\n", a, b);
+			return a - b
+		},
+	}
+	operators[2] = {
+		"*", 1,
+		proc(a, b: f64) -> f64 {
+			fmt.printf("{} * {}\n", a, b);
+			return a * b
+		},
+	}
+	operators[3] = {
+		"/", 1,
+		proc(a, b: f64) -> f64 {
+			fmt.printf("{} / {}\n", a, b);
+			return a / b
+		},
+	}
+	operators[4] = {
+		"^", 2,
+		proc(a, b: f64) -> f64 {
+			fmt.printf("{} ^ {}\n", a, b);
+			return math.pow(a, b)
+		},
 	}
 
-	for opstr, i in ops {
-		if opstr == str[:len(opstr)] {
-			fmt.printf("parsed: op = {}\n", opstr)
-			op = op_procs[i]
-			op_pcd = op_pcds[i]
-			index^ += len(opstr)
+	for operator, i in operators {
+		if operator.str == str[:len(operator.str)] {
+			fmt.printf("parsed: op = {}\n", operator.str)
+			op_pcd = operator.pcd
+			op = operator.func
+			index^ += len(operator.str)
 			return
 		}
 	}
