@@ -101,7 +101,7 @@ parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_
 		cur_opdata.op_pcd = op_pcd
 
 		// if the current precedence is lower than or equal to
-		// the previous precedence calculate operations in the oplist
+		// the previous precedence, calculate all operations in the oplist
 		if prev_op_pcd^ >= op_pcd {
 			oplist_calculate(oplist, prev_op_pcd^, cur_opdata)
 		}
