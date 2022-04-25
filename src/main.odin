@@ -37,26 +37,29 @@ print_calc_result :: proc(result: f64) {
 }
 
 // TODO: replace this with readline or linenoise...
-stdin_readline :: proc() -> strings.Builder {
-    stdin_stream := os.stream_from_handle(os.stdin)
-    stdin_reader := io.to_byte_reader(stdin_stream)
-    input_builder := strings.make_builder_none()
-
-    ch, err := u8(0), io.Error.None
-    for {
-        ch, err = io.read_byte(stdin_reader)
-        if ch == '\n' || err != .None { break }
-        strings.write_byte(&input_builder, ch)
-    }
-
-    return input_builder
+readline_from_stdin :: proc() -> (str_builder: strings.Builder, error: io.Error) {
+	stdin_stream := os.stream_from_handle(os.stdin)
+	stdin_reader := io.to_byte_reader(stdin_stream)
+	str_builder = strings.make_builder_none()
+	char: u8
+	delim: u8 = '\n'
+	for {
+		char = io.read_byte(stdin_reader) or_return
+		if char == delim do break
+		strings.write_byte(&str_builder, char)
+	}
+	return
 }
 
 main :: proc() {
     for {
 		print_input_prompt()
-		input_str_builder := stdin_readline()
-        defer strings.destroy_builder(&input_str_builder)
+		input_str_builder, readline_error := readline_from_stdin()
+		defer strings.destroy_builder(&input_str_builder)
+		if readline_error != .None {
+			fmt.printf("{}\n", readline_error)
+			os.exit(1)
+		}
 
         input := strings.trim_space(strings.to_string(input_str_builder))
 		switch input {

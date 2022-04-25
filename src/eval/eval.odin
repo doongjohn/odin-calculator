@@ -165,7 +165,6 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 	if prev_token == .Number {
 		fmt.println("final calculation")
 		oplist_calculate(oplist[:], prev_op_pcd, &cur_opdata)
-		fmt.printf("result = {}\n", cur_opdata.num)
 		result = cur_opdata.num
 		return
 	} else {
