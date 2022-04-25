@@ -17,7 +17,7 @@ DIR=`pwd`
   "enable_format": true,
   "enable_snippets": true,
   "formatter": {
-  	"tabs": true,
+    "tabs": true,
     "characters": 90
   }
 }
