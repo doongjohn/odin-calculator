@@ -57,7 +57,8 @@ main :: proc() {
 		input_str_builder, readline_error := readline_from_stdin()
 		defer strings.destroy_builder(&input_str_builder)
 		if readline_error != .None {
-			fmt.printf("{}\n", readline_error)
+			fmt.printf("Error: {}\n", readline_error)
+			strings.destroy_builder(&input_str_builder)
 			os.exit(1)
 		}
 
@@ -101,14 +102,15 @@ test :: proc(tests: []Test_Data) {
 				fmt.println("🟢 passed\n")
 			} else {
 				failed += 1
-				fmt.printf("🔴 failed\nexpected: {:.6f})\n\n", expected)
+				fmt.printf("🔴 failed\nexpected: {:.6f})\n", expected)
 			}
 		} else {
 			failed += 1
-			fmt.println("❗failed to evaluate\n")
+			fmt.println("❌ failed to evaluate\n")
 		}
 	}
-	fmt.printf("🟢 passed: {}\n🔴 falied: {}\n", passed, failed)
+	fmt.printf("🟢 passed: {}\n", passed)
+	fmt.printf("🔴 falied: {}\n", failed)
 }
 
 test_all :: proc() {
