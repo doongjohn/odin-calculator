@@ -149,23 +149,32 @@ parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pc
 
 @(private)
 @(require_results)
-parse_paren :: proc(index: ^int, str: string) -> (expr_end: int, ok: bool = true) {
+parse_paren :: proc(index: ^int, str: string) -> (expr_sign: f64, expr_start, expr_end: int, ok: bool = true) {
 	// parse parentheses
 	// return:
-	//     expr_end => index where the parsing is ended
-	//     ok       => is parentheses has a matching pair
-	// TODO: include sign
+	//     expr_sign  => sign of this expression
+	//     expr_start => index where the inner expression is started
+	//     expr_end   => index where the inner expression is ended
+	//     ok         => is parentheses has a matching pair
 
 	length := len(str)
-
-	if length == 1 || str[0] != '(' {
+	if length <= 1 {
 		ok = false; return
 	}
 
-	end := 0
+	expr_sign = 1
+	expr_start = index^ + 1
+	if str[:2] == "-(" {
+		expr_sign = -1
+		expr_start += 1
+	} else if str[:2] == "+(" {
+		expr_start += 1
+	} else if str[0] != '(' {
+		ok = false; return
+	}
+
 	open_count := 1
-	for end < length - 1 {
-		end += 1
+	for end := expr_start - index^; end < length; end += 1 {
 		switch str[end] {
 		case '(': open_count += 1
 		case ')': open_count -= 1

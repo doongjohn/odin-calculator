@@ -13,10 +13,6 @@ package main
 // - [ ] custom math functions
 // - [ ] custom infix operator
 
-// References:
-// https://en.wikipedia.org/wiki/Shunting-yard_algorithm
-// https://en.wikipedia.org/wiki/Operator-precedence_parser
-
 import "core:io"
 import "core:os"
 import "core:fmt"
@@ -57,9 +53,9 @@ main :: proc() {
 		input_str_builder, readline_error := readline_from_stdin()
 		defer strings.destroy_builder(&input_str_builder)
 		if readline_error != .None {
-			fmt.printf("Error: {}\n", readline_error)
+			fmt.printf("Error from `readline_from_stdin()`: {}\n", readline_error)
 			strings.destroy_builder(&input_str_builder)
-			os.exit(1)
+			os.exit(1) // defer does not work with os.exit() because the program ends here
 		}
 
         input := strings.trim_space(strings.to_string(input_str_builder))
@@ -178,6 +174,10 @@ test_all :: proc() {
 		{
 			"2 + -(2 / 2)",
 			2 + -(2 / 2),
+		},
+		{
+			"2 + +(2 / 2)--(13*12+2)",
+			2 + (2 / 2)- -(13*12+2),
 		},
 	}
 	test(tests[:])

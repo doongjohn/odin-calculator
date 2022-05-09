@@ -51,6 +51,25 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 	num: f64 = 0
 	parse_ok := false
 
+	// try parse parentheses
+	paren_sign := 0.0
+	paren_start := 0
+	paren_end := 0
+	paren_sign, paren_start, paren_end, parse_ok = parse_paren(cur_i, input[cur_i^:])
+	if parse_ok {
+		fmt.println("parsed: parentheses")
+		// NOTE: it may cause stack overflow if there are too many nested parentheses
+		num, parse_ok = evaluate(input[paren_start:paren_end])
+		if parse_ok {
+			fmt.println("(expression ended)")
+			cur_opdata.num = num * paren_sign
+			return
+		} else {
+			fmt.println("error: invalid expression!")
+			ok = false; return
+		}
+	}
+
 	// try parse constant
 	num, parse_ok = parse_const(cur_i, input[cur_i^:])
 	if parse_ok {
@@ -65,24 +84,6 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 		cur_opdata.num = num
 		fmt.printf("parsed: number literal = {}\n", num)
 		return
-	}
-
-	// try parse parentheses
-	paren_start := cur_i^ + 1
-	paren_end := 0
-	paren_end, parse_ok = parse_paren(cur_i, input[cur_i^:])
-	if parse_ok {
-		fmt.println("parsed: parentheses")
-		// NOTE: it may cause stack overflow
-		num, parse_ok = evaluate(input[paren_start:paren_end])
-		if parse_ok {
-			fmt.println("(expression ended)")
-			cur_opdata.num = num
-			return
-		} else {
-			fmt.println("error: invalid expression!")
-			ok = false; return
-		}
 	}
 
 	ok = false; return
