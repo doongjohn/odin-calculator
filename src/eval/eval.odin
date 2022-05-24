@@ -2,14 +2,14 @@ package eval
 
 import "core:fmt"
 
-@(private)
+@(private="file")
 TokenType :: enum {
 	None,
 	Number,
 	Operator,
 }
 
-@(private)
+@(private="file")
 Op_Data :: struct {
 	num: f64,
 	op: proc(a, b: f64) -> f64,
@@ -57,15 +57,14 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 	paren_end := 0
 	paren_sign, paren_start, paren_end, parse_ok = parse_paren(cur_i, input[cur_i^:])
 	if parse_ok {
-		fmt.println("parsed: parentheses")
 		// NOTE: it may cause stack overflow if there are too many nested parentheses
 		num, parse_ok = evaluate(input[paren_start:paren_end])
 		if parse_ok {
-			fmt.println("(expression ended)")
 			cur_opdata.num = num * paren_sign
 			return
 		} else {
-			fmt.println("error: invalid expression!")
+			// TODO: return proper error
+			fmt.println("ERR: invalid expression!")
 			ok = false; return
 		}
 	}
@@ -74,7 +73,6 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 	num, parse_ok = parse_const(cur_i, input[cur_i^:])
 	if parse_ok {
 		cur_opdata.num = num
-		fmt.printf("parsed: constant = {}\n", num)
 		return
 	}
 
@@ -82,7 +80,6 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 	num, parse_ok = parse_number(cur_i, input[cur_i^:])
 	if parse_ok {
 		cur_opdata.num = num
-		fmt.printf("parsed: number literal = {}\n", num)
 		return
 	}
 
@@ -129,10 +126,8 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 	prev_op_pcd: u8
 
 	length := len(input)
-	cur_i: int
+	cur_i := 0
 	for cur_i < length {
-		fmt.printf("[{}]: %c\n", cur_i, input[cur_i])
-
 		// ignore white space
 		if input[cur_i] == ' ' {
 			cur_i += 1
@@ -144,7 +139,6 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 				prev_token = .Number
 				continue
 			} else {
-				fmt.println("error: number expected!")
 				ok = false; return
 			}
 		}
@@ -154,7 +148,8 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 				prev_token = .Operator
 				continue
 			} else {
-				fmt.println("error: unknown operator!")
+				// TODO: return proper error
+				fmt.println("ERR: unknown operator")
 				ok = false; return
 			}
 		}
@@ -164,13 +159,12 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 
 	// final calculation
 	if prev_token == .Number {
-		fmt.println("final calculation")
 		oplist_calculate(oplist[:], prev_op_pcd, &cur_opdata)
 		result = cur_opdata.num
 		return
 	} else {
 		// TODO: make error enum
-		fmt.println("error: expression must end with a number!")
+		fmt.println("ERR: expression must end with a number")
 		ok = false; return
 	}
 

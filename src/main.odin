@@ -13,11 +13,11 @@ package main
 // - [ ] custom math functions
 // - [ ] custom infix operator
 
+import "core:math"
+import "core:strings"
+import "core:fmt"
 import "core:io"
 import "core:os"
-import "core:fmt"
-import "core:strings"
-import "core:math"
 import "eval"
 
 print_input_prompt :: proc() {
@@ -53,9 +53,10 @@ main :: proc() {
 		input_str_builder, readline_error := readline_from_stdin()
 		defer strings.destroy_builder(&input_str_builder)
 		if readline_error != .None {
-			fmt.printf("Error from `readline_from_stdin()`: {}\n", readline_error)
+			print_error_prompt()
+			fmt.printf("`io.read_byte` {}\n", readline_error)
 			strings.destroy_builder(&input_str_builder)
-			os.exit(1) // defer does not work with os.exit() because the program ends here
+			os.exit(1) // defer does not work after os.exit() because the program exits here
 		}
 
         input := strings.trim_space(strings.to_string(input_str_builder))
@@ -69,116 +70,11 @@ main :: proc() {
 			if ok {
 				print_calc_result(result)
 			} else {
-				// TODO: print error
+				// TODO: print proper error msg
+				print_error_prompt()
+				fmt.println("unknown command / invalid expression")
 			}
 			fmt.println()
 		}
 	}
-}
-
-Test_Data :: struct {
-	input: string,
-	result: f64,
-}
-
-test :: proc(tests: []Test_Data) {
-	passed, failed: int
-	for data in tests {
-		input := data.input
-		expected := data.result
-
-		print_input_prompt()
-		fmt.println(input)
-
-		result, ok := eval.evaluate(input)
-		if ok {
-			fmt.printf("  = {:.6f}\n", result)
-			if result == expected {
-				passed += 1
-				fmt.println("🟢 passed\n")
-			} else {
-				failed += 1
-				fmt.printf("🔴 failed\nexpected: {:.6f})\n", expected)
-			}
-		} else {
-			failed += 1
-			fmt.println("❌ failed to evaluate\n")
-		}
-	}
-	fmt.printf("🟢 passed: {}\n", passed)
-	fmt.printf("🔴 falied: {}\n", failed)
-}
-
-test_all :: proc() {
-	tests := [?]Test_Data {
-		{
-			"10",
-			10,
-		},
-		{
-			"-12",
-			-12,
-		},
-		{
-			"10+2",
-			10+2,
-		},
-		{
-			"+10-+12",
-			10-12,
-		},
-		{
-			"-10++10--10",
-			-10 + 10 + 10,
-		},
-		{
-			"10+2*3",
-			10+2*3,
-		},
-		{
-			"10+2*3^2",
-			10 + 2 * math.pow_f64(3, 2),
-		},
-		{
-			"10 * 3 + pi * 2",
-			10 * 3 + math.PI * 2,
-		},
-		{
-			"(200)",
-			200,
-		},
-		{
-			"(200+10*2)",
-			200+10*2,
-		},
-		{
-			"(2+3) * 2 + 1",
-			(2+3) * 2 + 1,
-		},
-		{
-			"2 * (2 + 10)",
-			2 * (2 + 10),
-		},
-		{
-			"(200+10*2)+(3+2^2)",
-			(200+10*2)+(3+math.pow_f64(2, 2)),
-		},
-		{
-			"(2 * (3 + 1 * 2)) + 1",
-			(2 * (3 + 1 * 2)) + 1,
-		},
-		{
-			"1 + (2 + 2) * 10 ^ 2",
-			1 + (2 + 2) * math.pow_f64(10, 2),
-		},
-		{
-			"2 + -(2 / 2)",
-			2 + -(2 / 2),
-		},
-		{
-			"2 + +(2 / 2)--(13*12+2)",
-			2 + (2 / 2)- -(13*12+2),
-		},
-	}
-	test(tests[:])
 }
