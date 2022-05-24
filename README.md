@@ -2,8 +2,9 @@
 
 ```
 ./odin-calc
->>> 1 + 2 * 2 + (3 + 2) * 2
-   = 15.000000
+>>> 1 + 2 * 2 + -(3 + 2) * 2
+  = -5.000000
+
 >>> exit
 ```
 
@@ -15,6 +16,7 @@ for fun 👍
 
 - ascii input
 - operator precedence
+- unary plus and minus (currently it is part of a number, not an operator)
 - predefined constatns (pi, tau, e)
 - nested parentheses (implemented via recursion, so it may `stack overflow`)
 
