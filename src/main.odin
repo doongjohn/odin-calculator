@@ -25,7 +25,7 @@ print_input_prompt :: proc() {
 }
 
 print_error_prompt :: proc() {
-	fmt.print("ERR:")
+	fmt.print("ERR: ")
 }
 
 print_calc_result :: proc(result: f64) {
@@ -36,7 +36,7 @@ print_calc_result :: proc(result: f64) {
 readline_from_stdin :: proc() -> (str_builder: strings.Builder, error: io.Error) {
 	stdin_stream := os.stream_from_handle(os.stdin)
 	stdin_reader := io.to_byte_reader(stdin_stream)
-	str_builder = strings.make_builder_none()
+	str_builder = strings.builder_make_none()
 	char: u8
 	delim: u8 = '\n'
 	for {
@@ -50,13 +50,16 @@ readline_from_stdin :: proc() -> (str_builder: strings.Builder, error: io.Error)
 main :: proc() {
     for {
 		print_input_prompt()
-		input_str_builder, readline_error := readline_from_stdin()
-		defer strings.destroy_builder(&input_str_builder)
-		if readline_error != .None {
+		input_str_builder, stdin_err := readline_from_stdin()
+		defer strings.builder_destroy(&input_str_builder)
+
+		if stdin_err != .None {
 			print_error_prompt()
-			fmt.printf("`io.read_byte` {}\n", readline_error)
-			strings.destroy_builder(&input_str_builder)
-			os.exit(1) // defer does not work after os.exit() because the program exits here
+			fmt.printf("`io.read_byte` {}\n", stdin_err)
+			strings.builder_destroy(&input_str_builder)
+
+			os.exit(1)
+			// defer does not work after os.exit()
 		}
 
         input := strings.trim_space(strings.to_string(input_str_builder))
