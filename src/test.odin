@@ -4,13 +4,13 @@ import "core:math"
 import "core:fmt"
 import "eval"
 
-@(private="file")
+@(private = "file")
 Test_Data :: struct {
 	input: string,
 	result: f64,
 }
 
-@(private="file")
+@(private = "file")
 test :: proc(tests: []Test_Data) {
 	passed, failed: int
 	for data in tests {

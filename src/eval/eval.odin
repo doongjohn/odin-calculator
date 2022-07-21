@@ -2,21 +2,21 @@ package eval
 
 import "core:fmt"
 
-@(private="file")
+@(private = "file")
 TokenType :: enum {
 	None,
 	Number,
 	Operator,
 }
 
-@(private="file")
+@(private = "file")
 Op_Data :: struct {
 	num: f64,
 	op: proc(a, b: f64) -> f64,
 	op_pcd: u8,
 }
 
-@(private="file")
+@(private = "file")
 oplist_calculate :: proc(oplist: []Op_Data, prev_op_pcd: u8, cur_opdata: ^Op_Data) {
 	// calculate all operations from the highest precedence
 	// -----------------
@@ -45,7 +45,7 @@ oplist_calculate :: proc(oplist: []Op_Data, prev_op_pcd: u8, cur_opdata: ^Op_Dat
 	}
 }
 
-@(private="file")
+@(private = "file")
 @(require_results)
 parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> (ok: bool = true) {
 	num: f64 = 0
@@ -86,7 +86,7 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 	ok = false; return
 }
 
-@(private="file")
+@(private = "file")
 @(require_results)
 parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_opdata: ^Op_Data, prev_op_pcd: ^u8) -> (ok: bool = true) {
 	op: proc(a, b: f64) -> f64 = nil
