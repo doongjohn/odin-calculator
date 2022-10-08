@@ -88,6 +88,13 @@ parse_token_number :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> 
 
 @(private = "file")
 @(require_results)
+parse_token_function :: proc(input: string, cur_i: ^int, cur_opdata: ^Op_Data) -> (ok: bool = true) {
+	// TODO: impl this
+	return
+}
+
+@(private = "file")
+@(require_results)
 parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_opdata: ^Op_Data, prev_op_pcd: ^u8) -> (ok: bool = true) {
 	op: proc(a, b: f64) -> f64 = nil
 	op_pcd: u8 = 0
@@ -115,6 +122,7 @@ parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_
 	ok = false; return
 }
 
+@(require_results)
 evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 	prev_token: TokenType = .None
 	prev_op_pcd: u8

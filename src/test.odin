@@ -35,9 +35,14 @@ test :: proc(tests: []Test_Data) {
 			fmt.println("❌ failed to evaluate\n")
 		}
 	}
-	fmt.print("test result: ")
-	fmt.print(failed == 0 ? "🟢 " : "🔴 ")
-	fmt.printf("{}/{}\n", passed, len(tests))
+
+	fmt.println("test result")
+	fmt.println("-----------")
+	if (failed == 0) {
+		fmt.println("all tests passed")
+	} else {
+		fmt.printf("🔴 {} tests out of {} tests failed\n", failed, len(tests))
+	}
 }
 
 test_all :: proc() {

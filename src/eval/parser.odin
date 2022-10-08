@@ -185,3 +185,52 @@ parse_paren :: proc(index: ^int, str: string) -> (expr_sign: f64, expr_start, ex
 
 	ok = false; return
 }
+
+@(private)
+@(require_results)
+parse_function :: proc(index: ^int, str: string) -> (expr_sign: f64, expr_start, expr_end: int, ok: bool = true) {
+	// TODO: impl this
+	// parse parentheses
+	// return:
+	//     expr_sign  => sign of this expression
+	//     expr_start => index where the inner expression is started
+	//     expr_end   => index where the inner expression is ended
+	//     ok         => is parentheses has a matching pair
+
+	length := len(str)
+	if length <= 1 {
+		ok = false; return
+	}
+
+	expr_sign = 1
+	expr_start = index^ + 1
+	if str[:2] == "-" {
+		expr_sign = -1
+		expr_start += 1
+	} else if str[:2] == "+" {
+		expr_start += 1
+	}
+
+	// check function name
+	// get function param count
+	// check param count is equal
+	// return result
+
+	open_count := 1
+	for end := expr_start - index^; end < length; end += 1 {
+		switch str[end] {
+		case '(': open_count += 1
+		case ')': open_count -= 1
+		}
+		if open_count < 0 {
+			ok = false; return
+		}
+		if open_count == 0 {
+			expr_end = index^ + end
+			index^ += end + 1
+			return
+		}
+	}
+
+	ok = false; return
+}

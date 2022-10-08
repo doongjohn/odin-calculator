@@ -8,9 +8,10 @@ package main
 // - [x] operator precedence
 // - [x] grouping with parentheses
 // - [x] predefined constants
+// - [ ] predefined functions
 // - [ ] unicode input
 // - [ ] custom constants
-// - [ ] custom math functions
+// - [ ] custom functions
 // - [ ] custom infix operator
 
 import "core:math"
@@ -33,9 +34,9 @@ print_calc_result :: proc(result: f64) {
 }
 
 // TODO: replace this with readline or linenoise...
-readline_from_stdin :: proc() -> (str_builder: strings.Builder, error: io.Error) {
+readline :: proc() -> (str_builder: strings.Builder, error: io.Error) {
 	stdin_stream := os.stream_from_handle(os.stdin)
-	stdin_reader := io.to_byte_reader(stdin_stream)
+	stdin_reader := io.to_reader(stdin_stream)
 	str_builder = strings.builder_make_none()
 	char: u8
 	delim: u8 = '\n'
@@ -50,7 +51,7 @@ readline_from_stdin :: proc() -> (str_builder: strings.Builder, error: io.Error)
 main :: proc() {
     for {
 		print_input_prompt()
-		input_str_builder, stdin_err := readline_from_stdin()
+		input_str_builder, stdin_err := readline()
 		defer strings.builder_destroy(&input_str_builder)
 
 		if stdin_err != .None {
@@ -59,15 +60,18 @@ main :: proc() {
 			strings.builder_destroy(&input_str_builder)
 
 			os.exit(1)
-			// defer does not work after os.exit()
+			// NOTE: defer does not work after `os.exit()`
 		}
 
         input := strings.trim_space(strings.to_string(input_str_builder))
+
 		switch input {
 		case "exit", "quit":
 			return
+
 		case "test":
 			test_all()
+
 		case:
 			result, ok := eval.evaluate(input)
 			if ok {
