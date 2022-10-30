@@ -86,7 +86,7 @@ parse_number :: proc(index: ^int, str: string) -> (num: f64, ok: bool = true) {
 
 @(private)
 @(require_results)
-parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pcd: u8, ok: bool = true) {
+parse_op :: proc(index: ^int, str: string) -> (symbol: string, op: proc(a, b: f64) -> f64, op_pcd: u8, ok: bool = true) {
 	// parse operator
 	// return:
 	//     op     => operation function
@@ -131,6 +131,7 @@ parse_op :: proc(index: ^int, str: string) -> (op: proc(a, b: f64) -> f64, op_pc
 
 	for operator, i in operators {
 		if operator.str == str[:len(operator.str)] {
+			symbol = operator.str
 			op_pcd = operator.pcd
 			op = operator.func
 			index^ += len(operator.str)

@@ -12,6 +12,7 @@ TokenType :: enum {
 @(private = "file")
 Op_Data :: struct {
 	num: f64,
+	symbol: string,
 	op: proc(a, b: f64) -> f64,
 	op_pcd: u8,
 }
@@ -99,9 +100,11 @@ parse_token_operator :: proc(oplist: []Op_Data, input: string, cur_i: ^int, cur_
 	op: proc(a, b: f64) -> f64 = nil
 	op_pcd: u8 = 0
 	parse_ok := false
+	symbol := ""
 
-	op, op_pcd, parse_ok = parse_op(cur_i, input[cur_i^:])
+	symbol, op, op_pcd, parse_ok = parse_op(cur_i, input[cur_i^:])
 	if parse_ok {
+		cur_opdata.symbol = symbol
 		cur_opdata.op = op
 		cur_opdata.op_pcd = op_pcd
 
@@ -143,7 +146,7 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 		}
 
 		if prev_token != .Number {
-			if parse_ok := parse_token_number(input, &cur_i, &cur_opdata); parse_ok {
+			if parse_token_number(input, &cur_i, &cur_opdata) {
 				prev_token = .Number
 				continue
 			} else {
@@ -155,7 +158,7 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 		}
 
 		if prev_token == .Number {
-			if parse_ok := parse_token_operator(oplist[:], input, &cur_i, &cur_opdata, &prev_op_pcd); parse_ok {
+			if parse_token_operator(oplist[:], input, &cur_i, &cur_opdata, &prev_op_pcd) {
 				prev_token = .Operator
 				continue
 			} else {
@@ -164,9 +167,7 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 				ok = false; return
 			}
 		}
-
-		// end of for loop
-	}
+	} // end of for loop
 
 	// final calculation
 	if prev_token == .Number {
@@ -175,7 +176,7 @@ evaluate :: proc(input: string) -> (result: f64, ok: bool = true) {
 		return
 	} else {
 		// TODO: make error enum
-		fmt.println("ERR: expression must end with a number")
+		fmt.printf("ERR: {} operator needs a right hand side number.\n", cur_opdata.symbol)
 		ok = false; return
 	}
 }
