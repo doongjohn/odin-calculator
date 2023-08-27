@@ -33,24 +33,21 @@ print_calc_result :: proc(result: f64) {
     fmt.printf("  = {:.6f}\n", result)
 }
 
-// TODO: replace this with readline or linenoise...
 readline :: proc() -> (str_builder: strings.Builder, error: io.Error) {
-	stdin_stream := os.stream_from_handle(os.stdin)
-	stdin_reader := io.to_reader(stdin_stream)
-	str_builder = strings.builder_make_none()
-	char: u8
-	delim: u8 = '\n'
+	stdin_reader := io.to_reader(os.stream_from_handle(os.stdin))
+	str_builder = strings.builder_make()
+	delimiter: rune = '\n'
 	for {
-		char = io.read_byte(stdin_reader) or_return
-		if char == delim do break
-		strings.write_byte(&str_builder, char)
+		r, _ := io.read_rune(stdin_reader) or_return
+		if r == delimiter do break
+		strings.write_rune(&str_builder, r)
 	}
-	return
+	return str_builder, io.Error.None
 }
 
 main :: proc() {
-    for {
-		print_input_prompt()
+	// for {
+	// 	print_input_prompt()
 		input_str_builder, stdin_err := readline()
 		defer strings.builder_destroy(&input_str_builder)
 
@@ -63,25 +60,26 @@ main :: proc() {
 			// NOTE: defer does not work after `os.exit()`
 		}
 
-        input := strings.trim_space(strings.to_string(input_str_builder))
+		input := strings.trim_space(strings.to_string(input_str_builder))
+		fmt.printf("{}\n", input)
 
-		switch input {
-		case "exit", "quit":
-			return
+	// 	switch input {
+	// 	case "exit", "quit":
+	// 		return
 
-		case "test":
-			test_all()
+	// 	case "test":
+	// 		test_all()
 
-		case:
-			result, ok := eval.evaluate(input)
-			if ok {
-				print_calc_result(result)
-			} else {
-				// TODO: print proper error msg
-				print_error_prompt()
-				fmt.println("unknown command / invalid expression")
-			}
-			fmt.println()
-		}
-	}
+	// 	case:
+	// 		result, ok := eval.evaluate(input)
+	// 		if ok {
+	// 			print_calc_result(result)
+	// 		} else {
+	// 			// TODO: print proper error msg
+	// 			print_error_prompt()
+	// 			fmt.println("unknown command / invalid expression")
+	// 		}
+	// 		fmt.println()
+	// 	}
+	// }
 }
